@@ -12,6 +12,9 @@ dependencies = [
     "specklepy>=2.21.3",
 ]
 
+[tool.setuptools]
+packages = ["src"]
+
 [tool.ruff]
 select = [
     "E", # pycodestyle

@@ -1,5 +1,5 @@
 # We use the official Python 3.13 image as our base image and will add our code to it. For more details, see https://hub.docker.com/_/python
-FROM python:3.13-slim
+FROM python:3.12.4-slim
 
 # We set the working directory to be the /home/speckle directory; all of our files will be copied here.
 WORKDIR /home/speckle
@@ -9,5 +9,10 @@ WORKDIR /home/speckle
 # This assumes that the Dockerfile is in the same directory as the rest of the code
 COPY . /home/speckle
 
-# Install the required packages directly using pip
-RUN pip install --no-cache-dir -r requirements.txt
+# uv will manage dependency installation
+RUN pip install uv
+
+# Install your package and dependencies
+RUN uv pip install -e .
+
+CMD ["python", "main.py", "run"]
