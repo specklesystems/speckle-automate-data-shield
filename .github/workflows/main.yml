@@ -18,7 +18,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install uv
-          uv pip install --system -e .
+          uv pip install --system -e . --only-binary=:all:
 
       - name: Extract functionInputSchema
         id: extract_schema
