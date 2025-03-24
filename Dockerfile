@@ -9,8 +9,17 @@ WORKDIR /home/speckle
 # This assumes that the Dockerfile is in the same directory as the rest of the code
 COPY . /home/speckle
 
+# Install build tools and uv
+RUN pip install --no-cache-dir uv wheel setuptools==77.0.3
 
-# Install your package and dependencies
-RUN pip install -r requirements.txt; pip install --no-deps -e .
+# Pre-install stringcase with the legacy install workaround
+RUN pip install --no-use-pep517 'stringcase==1.2.0'
 
+# Install all project dependencies from pyproject.toml using uv
+RUN uv pip install --system
+
+# Install your package itself in editable mode
+RUN pip install --no-deps -e .
+
+# Set the default command
 CMD ["python", "main.py", "run"]
