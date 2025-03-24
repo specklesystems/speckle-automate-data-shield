@@ -38,87 +38,51 @@ class ParameterAction(ABC):
         pass
 
 
-# Now, let's create a specific action. In this example, we're removing parameters
-# that start with a specific prefix.
-
-
-class PrefixRemovalAction(ParameterAction):
+class PrefixRemovalAction:
     """
-    Action to remove parameters with a specific prefix.
+    Action to remove parameters with a specific prefix, handling both removal
+    and tracking in one place for consistency.
     """
 
     def __init__(self, forbidden_prefix: str) -> None:
-        super().__init__()
-        # The prefix we want to remove
         self.forbidden_prefix: str = forbidden_prefix
+        self.affected_parameters = defaultdict(list)
 
     def apply(
-            self, parameter: Union[Base, Dict[str, Any]], parent_object: Base
+            self,
+            parameter: dict,
+            parent_object: Base,
+            containing_dict: dict,
+            parameter_key: str
     ) -> None:
-        """
-        Remove the parameter if its name starts with the forbidden prefix.
-        This function demonstrates the complexities of navigating and modifying
-        the structure of Revit parameters in Speckle's data model.
+        """Remove the parameter from the containing dictionary if its name starts with the forbidden prefix."""
+        param_name = parameter.get("name", parameter_key)
 
-        In Revit, custom parameters are stored with a GUID as the key, which means
-        we cannot predict the exact key ahead of time. Instead, we have to traverse
-        through the parameters and match them by another attribute, in this case,
-        the `applicationInternalName`.
-        """
-
-        # Extract the parameter name. If the parameter doesn't have a name or if the
-        # name doesn't start with the forbidden prefix, exit the function early.
-        param_name = parameter["name"]
-        if not param_name or not param_name.startswith(self.forbidden_prefix):
+        if not param_name.startswith(self.forbidden_prefix):
             return
 
-        # The parameters in parent_object are stored in a dictionary-like structure
-        # where the key is a GUID (applicationInternalName). We need to safely
-        # access this key without causing a KeyError.
+        # Remove from the containing dictionary (v3)
+        containing_dict.pop(parameter_key, None)
 
-        # If the parameter's parent object is a Base type, we can use the `__dict__` method
-        # to access its underlying dictionary representation.
-        if isinstance(parent_object["parameters"], Base):
-            try:
-                # Retrieve the unique GUID which corresponds to the parameter's key in the parent object.
-                application_name = parameter.__getitem__("applicationInternalName")
-
-                # Check if the GUID exists as a key in the parent object's parameters.
-                # If it does, remove that parameter from the dictionary.
-                if application_name in parent_object["parameters"].__dict__:
-                    parent_object["parameters"].__dict__.pop(application_name)
-                    self.affected_parameters[parent_object["id"]].append(param_name)
-
-            except KeyError:
-                pass
-                # This block will execute if the `applicationInternalName` key is not found in parameter.
-                # In this example, we're simply passing over this exception, but more specific error
-                # handling can be implemented if needed.
-                # Record this removal in our affected_parameters dictionary
+        # Track affected object and parameter
+        self.affected_parameters[getattr(parent_object, "id", None)].append(param_name)
 
     def report(self, automate_context: AutomationContext) -> None:
-        """
-        Generate a summary of removed parameters.
-
-        After all parameters have been checked, this method will be called to
-        provide feedback on the results of the action.
-        """
         if not self.affected_parameters:
             return
 
-        # Summarize the names of all removed parameters
         removed_params = set(
             param for params in self.affected_parameters.values() for param in params
         )
 
         message = f"The following parameters were removed: {', '.join(removed_params)}"
 
-        # Attach this summary to the relevant objects in the AutomationContext
         automate_context.attach_info_to_objects(
             category="Removed_Parameters",
             object_ids=list(self.affected_parameters.keys()),
             message=message,
         )
+
 
 
 # This example Automate function is for prefixed parameter removal. Additional example actions below follow the same
