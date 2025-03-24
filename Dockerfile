@@ -18,8 +18,5 @@ RUN pip install --no-use-pep517 'stringcase==1.2.0'
 # Install all project dependencies from pyproject.toml using uv
 RUN uv pip install
 
-# Install your package itself in editable mode
-RUN pip install --no-deps -e .
-
 # Set the default command
 CMD ["python", "main.py", "run"]
