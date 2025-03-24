@@ -9,10 +9,8 @@ WORKDIR /home/speckle
 # This assumes that the Dockerfile is in the same directory as the rest of the code
 COPY . /home/speckle
 
-# uv will manage dependency installation
-RUN pip install uv
 
 # Install your package and dependencies
-RUN uv sync --system
+RUN pip install -r requirements.txt; pip install --no-deps -e .
 
 CMD ["python", "main.py", "run"]

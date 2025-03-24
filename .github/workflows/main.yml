@@ -17,8 +17,8 @@ jobs:
           python-version: '3.13'
       - name: Install dependencies
         run: |
-          pip install uv
-          uv sync --system uv.lock
+          pip install -r requirements.txt
+          pip install --no-deps -e .
 
       - name: Extract functionInputSchema
         id: extract_schema
