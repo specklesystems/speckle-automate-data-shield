@@ -8,6 +8,7 @@ WORKDIR /home/speckle
 # We also ensure that the user 'speckle' owns these files, so it can access them
 # This assumes that the Dockerfile is in the same directory as the rest of the code
 COPY . /home/speckle
+q
 
 # Install build tools and uv
 RUN pip install --no-cache-dir uv wheel setuptools==77.0.3
