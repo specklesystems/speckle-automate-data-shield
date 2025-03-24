@@ -30,7 +30,7 @@ class PrefixMatcher(ParameterMatcher):
     def matches(self, param_name: str) -> bool:
         """Check if the parameter name starts with the match value."""
         if self.strict_mode:
-            return param_name == self.match_value
+            return param_name.startswith(self.match_value)
         return param_name.lower().startswith(self.match_value.lower())
 
 
