@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir uv wheel setuptools==77.0.3
 RUN pip install --no-use-pep517 'stringcase==1.2.0'
 
 # Install all project dependencies from pyproject.toml using uv
-RUN uv pip install --system
+RUN uv pip install
 
 # Install your package itself in editable mode
 RUN pip install --no-deps -e .
