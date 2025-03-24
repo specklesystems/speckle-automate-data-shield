@@ -1,5 +1,5 @@
 [project]
-name = "speckle-automate-data-shield"
+name = "data-shield"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"

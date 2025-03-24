@@ -1,6 +1,6 @@
 from speckle_automate import AutomationContext
 from specklepy.objects import Base
-from actions import PrefixRemovalAction
+from src.actions import PrefixRemovalAction
 from src.inputs import FunctionInputs, SanitizationMode
 from traversal import get_data_traversal_rules
 
