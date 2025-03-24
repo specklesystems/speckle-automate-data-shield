@@ -13,6 +13,6 @@ COPY . /home/speckle
 RUN pip install uv
 
 # Install your package and dependencies
-RUN uv pip sync --system
+RUN uv pip sync --system uv.lock
 
 CMD ["python", "main.py", "run"]
