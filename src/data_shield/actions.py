@@ -1,36 +1,63 @@
+"""Module for parameter actions and matching strategies."""
+import re
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import Dict, List, Optional
+from typing import Any
 
 from speckle_automate import AutomationContext
 from specklepy.objects import Base
 
-from data_shield.rules import ParameterRules
+from data_shield.helpers import PatternChecker
 
 
-# Our main goal is to define actions that can be taken on parameters.
-# We'll start by creating a base class that all specific actions will inherit from.
+class ParameterMatcher(ABC):
+    """Strategy interface for parameter matching logic."""
+
+    def __init__(self, match_value: str, strict_mode: bool = False):
+        """Initialize with a value to match against and a strict mode flag."""
+        self.match_value = match_value
+        self.strict_mode = strict_mode
+
+    @abstractmethod
+    def matches(self, param_name: str) -> bool:
+        """Check if parameter name matches according to this strategy."""
+        pass
+
+
+class PrefixMatcher(ParameterMatcher):
+    """Matches parameters by prefix."""
+
+    def matches(self, param_name: str) -> bool:
+        """Check if the parameter name starts with the match value."""
+        if self.strict_mode:
+            return param_name == self.match_value
+        return param_name.lower().startswith(self.match_value.lower())
+
+
+class PatternMatcher(ParameterMatcher):
+    """Matches parameters by regex pattern."""
+
+    def matches(self, param_name: str) -> bool:
+        """Check if the parameter name matches the regex pattern."""
+        pattern = PatternChecker(self.match_value, self.strict_mode)
+        return pattern.check(param_name)
 
 
 class ParameterAction(ABC):
-    """
-    Base class for actions on parameters.
-
-    This class provides a general structure for actions that can be applied to
-    parameters. Each action derived from this class will have to implement its
-    specific logic in the `apply` method and then provide feedback through the
-    `report` method.
-    """
+    """Base class for actions on parameters."""
 
     def __init__(self) -> None:
-        # A dictionary to keep track of parameters affected by the action.
-        # The key is the parent object's ID, and the value is a list of
-        # parameter names that were affected.
-        self.affected_parameters: Dict[str, List[str]] = defaultdict(list)
+        """A dictionary to keep track of parameters affected by the action."""
+        self.affected_parameters: dict[str, list[str]] = defaultdict(list)
 
     @abstractmethod
-    def apply(self, parameter: Dict[str, str], parent_object: Dict[str, str]) -> None:
-        """Method to apply the specific action logic on the parameter."""
+    def check(self, param_name: str) -> bool:
+        """Check if the parameter meets the criteria for this action."""
+        pass
+
+    @abstractmethod
+    def apply(self, parameter: dict[str, Any], parent_object: Base, properties_dict: dict[str, Any], key: str) -> None:
+        """Apply the specific action logic on the parameter."""
         pass
 
     @abstractmethod
@@ -39,36 +66,36 @@ class ParameterAction(ABC):
         pass
 
 
-class PrefixRemovalAction:
-    """
-    Action to remove parameters with a specific prefix, handling both removal
-    and tracking in one place for consistency.
-    """
+class RemovalAction(ParameterAction):
+    """Action to remove parameters based on a matching strategy."""
 
-    def __init__(self, forbidden_prefix: str) -> None:
-        self.forbidden_prefix: str = forbidden_prefix
-        self.affected_parameters = defaultdict(list)
+    def __init__(self, matcher: ParameterMatcher) -> None:
+        """Initialize with a matcher strategy."""
+        super().__init__()
+        self.matcher = matcher
+
+    def check(self, param_name: str) -> bool:
+        """Check if parameter matches using the provided matcher."""
+        return self.matcher.matches(param_name)
 
     def apply(
             self,
-            parameter: dict,
+            parameter: dict[str, Any],
             parent_object: Base,
-            containing_dict: dict,
+            containing_dict: dict[str, Any],
             parameter_key: str
     ) -> None:
-        """Remove the parameter from the containing dictionary if its name starts with the forbidden prefix."""
+        """Remove the parameter from the containing dictionary if it matches."""
         param_name = parameter.get("name", parameter_key)
 
-        if not param_name.startswith(self.forbidden_prefix):
-            return
-
-        # Remove from the containing dictionary (v3)
+        # Remove from the containing dictionary
         containing_dict.pop(parameter_key, None)
 
         # Track affected object and parameter
         self.affected_parameters[getattr(parent_object, "id", None)].append(param_name)
 
     def report(self, automate_context: AutomationContext) -> None:
+        """Provide feedback based on the action's results."""
         if not self.affected_parameters:
             return
 
@@ -85,79 +112,24 @@ class PrefixRemovalAction:
         )
 
 
+# Factory functions to create specific actions with the right matcher
+def create_prefix_removal_action(forbidden_prefix: str, strict_mode: bool = False) -> RemovalAction:
+    """Create a removal action that matches by prefix."""
+    matcher = PrefixMatcher(forbidden_prefix, strict_mode)
+    return RemovalAction(matcher)
 
-# This example Automate function is for prefixed parameter removal. Additional example actions below follow the same
-# pattern, but with different logic. In some instances there is a strong coupling between the action and the checking
-# logic, and in others there is a looser coupling. Which is why I have defined the actions separately from the
-# checking logic.
+
+def create_pattern_removal_action(pattern: str, strict_mode: bool = False) -> RemovalAction:
+    """Create a removal action that matches by pattern/regex."""
+    matcher = PatternMatcher(pattern, strict_mode)
+    return RemovalAction(matcher)
 
 
-class MissingValueReportAction(ParameterAction):
+# Placeholder for future anonymization action
+def create_anonymization_action() -> None:
+    """Create an action that anonymizes email addresses in parameter values.
+    
+    This is a placeholder for future implementation.
     """
-    This action class is designed to handle parameters that lack values.
-    It checks each parameter for a value, and if one isn't found, it records the
-    parameter's name. Later, a report can be generated that summarizes which parameters
-    are missing values.
-    """
-
-    def apply(self, parameter: Dict[str, str], parent_object: Dict[str, str]) -> None:
-        # Check if the parameter has a missing value using our predefined rule
-        if ParameterRules.has_missing_value(parameter):
-            # If missing, add the parameter's name to our affected_parameters dictionary
-            # The key is the parent object's ID for easy lookup later
-            self.affected_parameters[parent_object["id"]].append(parameter["name"])
-
-    def report(self, automate_context: AutomationContext) -> None:
-        # Construct a set of unique parameter names that have missing values
-        missing_value_params = set(
-            param for params in self.affected_parameters.values() for param in params
-        )
-
-        # Formulate a message summarizing the missing parameters
-        message = f"The following parameters have missing values: {', '.join(missing_value_params)}"
-
-        # Use the automation context to attach this message to the relevant objects
-        automate_context.attach_info_to_objects(
-            category="Missing_Values",
-            object_ids=list(self.affected_parameters.keys()),
-            message=message,
-        )
-
-
-class DefaultValueMutationAction(ParameterAction):
-    """
-    This action class is focused on parameters that have default values.
-    The goal is to detect these default values and replace them with a new specified value.
-    The parameters that were mutated will be recorded, allowing for a report to be generated
-    that summarizes the changes.
-    """
-
-    def __init__(self, new_value: Optional[str] = None) -> None:
-        super().__init__()
-        # The new value to replace defaults with; if none is given, use "Updated Value"
-        self.new_value: str = new_value or "Updated Value"
-
-    def apply(self, parameter: Dict[str, str], parent_object: Dict[str, str]) -> None:
-        # Check if the parameter has a default value
-        if ParameterRules.has_default_value(parameter):
-            # If it does, update its value with the new specified value
-            parameter["value"] = self.new_value  # Mutate the parameter value
-
-            # Record the parameter's name in our affected_parameters dictionary
-            self.affected_parameters[parent_object["id"]].append(parameter["name"])
-
-    def report(self, automate_context: AutomationContext) -> None:
-        # Construct a set of unique parameter names that were mutated
-        mutated_params = set(
-            param for params in self.affected_parameters.values() for param in params
-        )
-
-        # Formulate a message summarizing the mutated parameters
-        message = f"The following parameters were updated from default values: {', '.join(mutated_params)}"
-
-        # Use the automation context to attach this message to the relevant objects
-        automate_context.attach_info_to_objects(
-            category="Updated_Defaults",
-            object_ids=list(self.affected_parameters.keys()),
-            message=message,
-        )
+    # To be implemented
+    return None
