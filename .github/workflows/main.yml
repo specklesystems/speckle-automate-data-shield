@@ -17,8 +17,8 @@ jobs:
           python-version: '3.13'
       - name: Install dependencies
         run: |
-          pip install uv
-          uv pip install --system -e . --only-binary=:all:
+            python -m pip install --upgrade pip
+            pip install -e .
 
       - name: Extract functionInputSchema
         id: extract_schema
