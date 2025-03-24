@@ -25,7 +25,7 @@ jobs:
           pip install --no-use-pep517 'stringcase==1.2.0'
       
       - name: Install all dependencies from pyproject.toml
-        run: uv pip install
+        run: uv pip install --group default --system
 
       - name: Extract functionInputSchema
         id: extract_schema
