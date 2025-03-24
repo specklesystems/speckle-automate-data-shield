@@ -142,4 +142,6 @@ def automate_function(
     # We can pin the result view to the specific version we created.
     automate_context.set_context_view([f"{new_model_id}@{new_version_id}"], False)
 
-    automate_context.mark_run_success("Parameters processed successfully.")
+    automate_context.mark_run_success(f"Parameters processed successfully with shield function "
+                                      f"{function_inputs.sanitization_mode}"
+                                      f"{' running in strict mode' if function_inputs.strict_mode else ''}.")
