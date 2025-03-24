@@ -7,8 +7,7 @@ from speckle_automate import (
 )
 from speckle_automate.fixtures import *  # noqa: F401, F403
 
-from src.function import automate_function
-from src.inputs import FunctionInputs, SanitizationMode
+from data_shield import automate_function, FunctionInputs, SanitizationMode
 
 
 class TestFunction:
