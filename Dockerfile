@@ -8,16 +8,18 @@ WORKDIR /home/speckle
 # We also ensure that the user 'speckle' owns these files, so it can access them
 # This assumes that the Dockerfile is in the same directory as the rest of the code
 COPY . /home/speckle
-q
 
-# Install build tools and uv
-RUN pip install --no-cache-dir uv wheel setuptools==77.0.3
+# Install tooling needed for legacy builds and wheel installs
+RUN pip install --no-cache-dir wheel setuptools==77.0.3
 
-# Pre-install stringcase with the legacy install workaround
+# Preinstall stringcase using legacy build workaround
 RUN pip install --no-use-pep517 'stringcase==1.2.0'
 
-# Install all project dependencies from pyproject.toml using uv
-RUN uv pip install --group default --system
+# Install all dependencies from requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Set the PYTHONPATH to find modules in src/
+ENV PYTHONPATH="/home/speckle/src"
 
 # Set the default command
 CMD ["python", "main.py", "run"]
