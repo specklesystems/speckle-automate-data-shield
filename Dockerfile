@@ -17,6 +17,7 @@ RUN pip install --no-use-pep517 'stringcase==1.2.0'
 
 # Install all dependencies from requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-deps -e .
 
 # Set the PYTHONPATH to find modules in src/
 ENV PYTHONPATH="/home/speckle/src"
