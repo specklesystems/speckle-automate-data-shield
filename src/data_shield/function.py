@@ -1,8 +1,7 @@
 from speckle_automate import AutomationContext
 from specklepy.objects import Base
-from src.actions import PrefixRemovalAction
-from src.inputs import FunctionInputs, SanitizationMode
-from traversal import get_data_traversal_rules
+
+from data_shield import FunctionInputs, SanitizationMode, PrefixRemovalAction, get_data_traversal_rules
 
 
 class ParameterProcessor:

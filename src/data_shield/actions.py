@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from typing import Dict, List, Optional
+
 from speckle_automate import AutomationContext
 from specklepy.objects import Base
 
-from src.rules import ParameterRules
+from data_shield import ParameterRules
 
 
 # Our main goal is to define actions that can be taken on parameters.

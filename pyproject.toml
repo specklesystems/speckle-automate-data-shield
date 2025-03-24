@@ -1,5 +1,5 @@
 [project]
-name = "data-shield"
+name = "data_shield"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -12,8 +12,8 @@ dependencies = [
     "specklepy>=2.21.3",
 ]
 
-[tool.setuptools]
-packages = ["src"]
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.ruff]
 select = [
