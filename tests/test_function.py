@@ -20,8 +20,8 @@ class TestFunction:
             automation_context,
             automate_function,
             FunctionInputs(
-                sanitization_mode=SanitizationMode.PATTERN_MATCHING,
-                parameter_input="/.*?peckl.*/i",
+                sanitization_mode=SanitizationMode.ANONYMIZATION,
+                parameter_input="",
                 strict_mode=True,
             ),
         )

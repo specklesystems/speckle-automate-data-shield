@@ -1,5 +1,4 @@
 """Module for parameter actions and matching strategies."""
-import re
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from typing import Any
@@ -7,7 +6,7 @@ from typing import Any
 from speckle_automate import AutomationContext
 from specklepy.objects import Base
 
-from data_shield.helpers import PatternChecker
+from data_shield.helpers import EmailMatcher, PatternChecker
 
 
 class ParameterMatcher(ABC):
@@ -112,24 +111,96 @@ class RemovalAction(ParameterAction):
         )
 
 
+
+
+
+class AnonymizationAction(ParameterAction):
+    """Action to anonymize email addresses in parameter values."""
+
+    def __init__(self) -> None:
+        """Initialize the anonymization action with an email matcher."""
+        super().__init__()
+        self.email_matcher = EmailMatcher()
+        # Count of anonymized parameters for reporting
+        self.anonymized_count = 0
+
+    def check(self, param_value: str) -> bool:
+        """Check if parameter value contains an email address.
+
+        Args:
+            param_value: The parameter value to check
+
+        Returns:
+            bool: True if the parameter value contains an email address, False otherwise
+        """
+        return self.email_matcher.contains_email(param_value)
+
+    def apply(
+            self,
+            parameter: dict[str, Any],
+            parent_object: Base,
+            containing_dict: dict[str, Any],
+            parameter_key: str
+    ) -> None:
+        """Anonymize email addresses in the parameter value.
+
+        Args:
+            parameter: The parameter dictionary
+            parent_object: The parent Speckle object
+            containing_dict: The dictionary containing the parameter
+            parameter_key: The key of the parameter in the containing dictionary
+        """
+        if "value" not in parameter or not isinstance(parameter["value"], str):
+            return
+
+        param_name = parameter.get("name", parameter_key)
+        original_value = parameter["value"]
+
+        # Anonymize email addresses in the parameter value
+        anonymized_value = self.email_matcher.anonymize_email(original_value)
+
+        # Only track changes if something was actually anonymized
+        if anonymized_value != original_value:
+            # Update the parameter value in place
+            parameter["value"] = anonymized_value
+
+            # Track affected object and parameter
+            self.affected_parameters[getattr(parent_object, "id", None)].append(param_name)
+            self.anonymized_count += 1
+
+    def report(self, automate_context: AutomationContext) -> None:
+        """Provide feedback based on the action's results.
+
+        Args:
+            automate_context: The automation context
+        """
+        if not self.affected_parameters:
+            return
+
+        anonymized_params = set(
+            param for params in self.affected_parameters.values() for param in params
+        )
+
+        message = f"Email addresses were anonymized in {len(anonymized_params)} parameters"
+
+        automate_context.attach_info_to_objects(
+            category="Anonymized_Parameters",
+            object_ids=list(self.affected_parameters.keys()),
+            message=message,
+        )
+
 # Factory functions to create specific actions with the right matcher
 def create_prefix_removal_action(forbidden_prefix: str, strict_mode: bool = False) -> RemovalAction:
     """Create a removal action that matches by prefix."""
     matcher = PrefixMatcher(forbidden_prefix, strict_mode)
     return RemovalAction(matcher)
 
-
 def create_pattern_removal_action(pattern: str, strict_mode: bool = False) -> RemovalAction:
     """Create a removal action that matches by pattern/regex."""
     matcher = PatternMatcher(pattern, strict_mode)
     return RemovalAction(matcher)
 
-
-# Placeholder for future anonymization action
-def create_anonymization_action() -> None:
-    """Create an action that anonymizes email addresses in parameter values.
-    
-    This is a placeholder for future implementation.
-    """
-    # To be implemented
-    return None
+# Factory function to create anonymization action
+def create_anonymization_action() -> AnonymizationAction:
+    """Create an action that anonymizes email addresses in parameter values."""
+    return AnonymizationAction()
