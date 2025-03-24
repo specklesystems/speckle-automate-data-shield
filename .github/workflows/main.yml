@@ -15,10 +15,17 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - name: Install dependencies
+          
+      - name: Install uv
+        run: pip install uv
+      
+      - name: Preinstall stringcase workaround
         run: |
-          pip install -r requirements.txt
-          pip install --no-deps -e .
+          pip install wheel setuptools==77.0.3
+          pip install --no-use-pep517 'stringcase==1.2.0'
+      
+      - name: Install all dependencies from pyproject.toml
+        run: uv pip install --system
 
       - name: Extract functionInputSchema
         id: extract_schema
