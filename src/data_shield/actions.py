@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 from speckle_automate import AutomationContext
 from specklepy.objects import Base
 
-from data_shield import ParameterRules
+from data_shield.rules import ParameterRules
 
 
 # Our main goal is to define actions that can be taken on parameters.

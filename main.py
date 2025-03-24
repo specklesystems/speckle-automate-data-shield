@@ -1,7 +1,7 @@
 from speckle_automate import execute_automate_function
 
-from data_shield import FunctionInputs
-from data_shield import automate_function
+from data_shield.inputs import FunctionInputs
+from data_shield.function import automate_function
 
 # make sure to call the function with the executor
 if __name__ == "__main__":
