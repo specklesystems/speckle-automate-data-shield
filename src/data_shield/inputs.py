@@ -51,6 +51,7 @@ class FunctionInputs(AutomateBase):
     )
 
     strict_mode: bool = Field(
+        title="Case Sensitivity Strict Mode",
         default=False,
         description="If checked, matching is case-sensitive. If unchecked, case-insensitive."
     )
