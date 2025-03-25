@@ -37,9 +37,9 @@ class ParameterProcessor:
             )
             self.process_properties_dict(properties_dict, current_object)
 
-        # Legacy placeholder for v2, ready for later
+        # Handle v2 Revit parameters
         if hasattr(current_object, "parameters") and current_object.parameters is not None:
-            pass  # Add v2 handling when ready
+            self.process_revit_parameters(current_object)
 
     def process_properties_dict(self, properties_dict, current_object):
         """Recursively process v3-style properties dictionary to find and apply the action to parameters.
