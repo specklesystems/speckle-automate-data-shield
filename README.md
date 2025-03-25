@@ -45,7 +45,10 @@ Get fancy and use `*`, `?`, or full regular expressions.
 > **Best for:** Keeping the structure, hiding the details.
 
 Automatically detect email addresses inside parameter values and anonymize them.
-> Example: `john.doe@example.com` becomes `j***@example.com`
+> Example:
+> 
+> ![image](https://github.com/user-attachments/assets/076e4acd-2257-4ebd-b82b-c151e51c00c0)
+
 
 No setup needed. Just select and go.
 
