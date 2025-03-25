@@ -7,7 +7,7 @@ from typing import Any
 from speckle_automate import AutomationContext
 from specklepy.objects import Base
 
-from data_shield.helpers import EmailMatcher, PatternChecker
+from data_shield.matchers import EmailMatcher, PatternChecker
 
 
 class ParameterMatcher(ABC):

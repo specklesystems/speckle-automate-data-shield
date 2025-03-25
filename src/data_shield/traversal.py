@@ -1,9 +1,10 @@
+"""This module defines a function that generates traversal rules for navigating."""
+
 from specklepy.objects.graph_traversal.traversal import GraphTraversal, TraversalRule
 
 
 def get_data_traversal_rules() -> GraphTraversal:
-    """
-    Generates traversal rules for navigating Speckle data structures.
+    """Generates traversal rules for navigating Speckle data structures.
 
     This function defines and returns traversal rules tailored for Speckle data.
     These rules are used to navigate and extract specific data properties
@@ -33,9 +34,7 @@ def get_data_traversal_rules() -> GraphTraversal:
 
     display_value_rule = TraversalRule(
         [
-            lambda o: any(
-                getattr(o, alias, None) for alias in display_value_property_aliases
-            ),
+            lambda o: any(getattr(o, alias, None) for alias in display_value_property_aliases),
             lambda o: "Geometry" in o.speckle_type,
         ],
         lambda o: elements_property_aliases,
