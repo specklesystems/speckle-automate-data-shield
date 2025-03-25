@@ -1,6 +1,6 @@
 # 🛡️ Data Shield — User Guide
 
-**Data Shield** is a Speckle Automate function that helps you keep your model data clean, safe, and share-ready. Whether you're sending models to clients, collaborators, or just tidying up before archiving — Data Shield’s got your back.
+**Data Shield** is a Speckle Automate function that helps you keep your model data clean, safe, and share-ready. Whether you're sending models to clients or collaborators or just tidying up before archiving, Data Shield has your back.
 
 ## ✨ What Data Shield Does
 
@@ -21,7 +21,7 @@ We know one size doesn’t fit all, so Data Shield offers three modes to suit yo
 > **Best for:** Simple, predictable naming conventions.
 
 Remove parameters that start with a specific prefix.
-> Example: Want to remove everything starting with `secret_`? Just set that prefix and Data Shield does the rest.
+> Example: Want to remove everything starting with `secret_`? Just set that prefix, and Data Shield will do the rest.
 
 **Setup**:
 - Add your prefix (like `internal_`, `private_`, or `secret_`)
@@ -42,7 +42,7 @@ Get fancy and use `*`, `?`, or full regular expressions.
 ---
 
 ### Anonymization
-> **Best for:** Keeping the structure, hiding the details.
+> **Best for:** Keeping the structure and hiding the details.
 
 Automatically detect email addresses inside parameter values and anonymize them.
 > Example:
@@ -50,7 +50,7 @@ Automatically detect email addresses inside parameter values and anonymize them.
 > ![image](https://github.com/user-attachments/assets/076e4acd-2257-4ebd-b82b-c151e51c00c0)
 
 
-No setup needed. Just select and go.
+No setup is needed. Just select and go.
 
 ---
 
@@ -91,7 +91,7 @@ No setup needed. Just select and go.
 - Share confidently!
 
 ### → Anonymizing client data
-- Select Anonymization mode
+- Select the Anonymization mode
 - Run on any models with contact details
 - Use sanitized versions for demos, public decks, or sales pitches
 
@@ -107,6 +107,7 @@ No setup needed. Just select and go.
 - **Case mismatch?** Try turning off strict mode.
 - **Only partly sanitized?** Some complex models might need multiple passes.
 - **Errors?** Check run logs in the automation report for clues.
+- **Next Gen vs Legacy**: While v3 data objects are supported, if you're using non-Revit v2 objects, you might experience varied results. Please report any issues.
 
 ---
 
