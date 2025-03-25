@@ -90,6 +90,6 @@ def automate_function(
 
     automate_context.mark_run_success(
         f"Parameters processed successfully with shield function "
-        f"{function_inputs.sanitization_mode}"
+        f"{function_inputs.sanitization_mode.value}"
         f"{' running in strict mode' if function_inputs.strict_mode else ''}."
     )
