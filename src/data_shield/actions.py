@@ -150,75 +150,65 @@ class AnonymizationAction(ParameterAction):
         """Initialize the anonymization action with an email matcher."""
         super().__init__()
         self.email_matcher = EmailMatcher()
-        # Count of anonymized parameters for reporting
         self.anonymized_count = 0
 
     def check(self, param_value: str) -> bool:
-        """Check if parameter value contains an email address.
-
-        Args:
-            param_value: The parameter value to check
-
-        Returns:
-            bool: True if the parameter value contains an email address, False otherwise
-        """
-        return self.email_matcher.contains_email(param_value)
+        """Check if parameter value contains an email address."""
+        return isinstance(param_value, str) and self.email_matcher.contains_email(param_value)
 
     def apply(
         self, parameter: dict[str, Any], parent_object: Base, containing_dict: dict[str, Any] | Base, parameter_key: str
     ) -> None:
-        """Anonymize email addresses in the parameter value.
-
-        Args:
-            parameter: The parameter dictionary
-            parent_object: The parent Speckle object
-            containing_dict: The container (dict or Base object) holding the parameter
-            parameter_key: The key or attribute name of the parameter
-        """
-        if "value" not in parameter or not isinstance(parameter["value"], str):
-            return
-
+        """Anonymize email addresses in the parameter value."""
+        # Get parameter name and object ID - same as RemovalAction
         param_name = parameter.get("name", parameter_key)
-        original_value = parameter["value"]
         object_id = getattr(parent_object, "id", None)
 
-        # Anonymize email addresses in the parameter value
-        anonymized_value = self.email_matcher.anonymize_email(original_value)
+        # Get the value to anonymize
+        param_value = None
 
-        # Only track changes if something was actually anonymized
-        if anonymized_value != original_value:
-            # Update the parameter value in place
-            parameter["value"] = anonymized_value
+        # For dictionary-style parameters
+        if isinstance(parameter, dict) and "value" in parameter:
+            param_value = parameter["value"]
+            if isinstance(param_value, str) and self.email_matcher.contains_email(param_value):
+                # Anonymize and update
+                anonymized_value = self.email_matcher.anonymize_email(param_value)
+                parameter["value"] = anonymized_value
 
-            # If we're dealing with a Base object parameter (like in Revit),
-            # update the actual value property of the parameter object
-            if isinstance(containing_dict, Base):
+                # Track affected parameters - EXACTLY like RemovalAction does
+                self.affected_parameters[object_id].append(param_name)
+                self.anonymized_count += 1
+
+        # For Base object parameters (like in Revit)
+        elif isinstance(containing_dict, Base):
+            try:
+                # Try to get the parameter object
+                param_obj = None
                 try:
-                    # Try to get the parameter object using __getitem__ first (Revit v2 style)
                     param_obj = containing_dict.__getitem__(parameter_key)
-                    if param_obj is not None and hasattr(param_obj, "value"):
-                        setattr(param_obj, "value", anonymized_value)
                 except (AttributeError, KeyError, TypeError):
-                    # Fallback to standard attribute access
                     param_obj = getattr(containing_dict, parameter_key, None)
-                    if param_obj is not None and hasattr(param_obj, "value"):
+
+                if param_obj and hasattr(param_obj, "value"):
+                    param_value = getattr(param_obj, "value")
+                    if isinstance(param_value, str) and self.email_matcher.contains_email(param_value):
+                        # Anonymize and update
+                        anonymized_value = self.email_matcher.anonymize_email(param_value)
                         setattr(param_obj, "value", anonymized_value)
 
-            # Track affected object and parameter
-            self.affected_parameters[object_id].append(param_name)
-            self.anonymized_count += 1
+                        # Track affected parameters - EXACTLY like RemovalAction does
+                        self.affected_parameters[object_id].append(param_name)
+                        self.anonymized_count += 1
+            except KeyError:
+                pass  # Skip if any error occurs
 
     def report(self, automate_context: AutomationContext) -> None:
-        """Provide feedback based on the action's results.
-
-        Args:
-            automate_context: The automation context
-        """
+        """Provide feedback based on the action's results."""
         if not self.affected_parameters:
             return
 
+        # Copy the exact pattern from RemovalAction for consistency
         anonymized_params = set(param for params in self.affected_parameters.values() for param in params)
-
         message = f"Email addresses were anonymized in {len(anonymized_params)} parameters"
 
         automate_context.attach_info_to_objects(

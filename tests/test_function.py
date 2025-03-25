@@ -1,4 +1,5 @@
 """Run integration tests with a speckle server."""
+
 from speckle_automate import (
     AutomationContext,
     AutomationRunData,
@@ -12,6 +13,7 @@ from data_shield.function import FunctionInputs, SanitizationMode, automate_func
 
 class TestFunction:
     """Test the automate function."""
+
     def test_function_run(self, test_automation_run_data: AutomationRunData, test_automation_token: str) -> None:
         """Run an integration test for the automate function."""
         automation_context = AutomationContext.initialize(test_automation_run_data, test_automation_token)
@@ -21,8 +23,8 @@ class TestFunction:
             automate_function,
             FunctionInputs(
                 sanitization_mode=SanitizationMode.ANONYMIZATION,
-                parameter_input="",
-                strict_mode=True,
+                parameter_input="SPECKLE",
+                strict_mode=False,
             ),
         )
 
