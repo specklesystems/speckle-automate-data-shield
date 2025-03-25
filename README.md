@@ -1,100 +1,117 @@
-# Speckle Automate function template - Python
+# 🛡️ Data Shield — User Guide
 
-This template repository is for a Speckle Automate function written in Python
-using the [specklepy](https://pypi.org/project/specklepy/) SDK to interact with Speckle data.
+**Data Shield** is a Speckle Automate function that helps you keep your model data clean, safe, and share-ready. Whether you're sending models to clients, collaborators, or just tidying up before archiving — Data Shield’s got your back.
 
-This template contains the full scaffolding required to publish a function to the Automate environment.
-It also has some sane defaults for development environment setups.
+---
 
-## Getting started
+## ✨ What Data Shield Does
 
-1. Use this template repository to create a new repository in your own / organization's profile.
+Data Shield scans your Speckle model for parameters you’d rather not share and takes care of them for you. It creates a fresh, sanitized version of your model while keeping the original intact.
 
-Register the function 
+### Why you’ll love it:
+- **Privacy Protection** — Say goodbye to accidentally sharing sensitive data.
+- **Data Compliance** — Stay on the right side of data protection policies.
+- **Confident Collaboration** — Share models without oversharing.
 
-### Add new dependencies
+---
 
-To add new Python package dependencies to the project, use the following:
-`$ poetry add pandas`
+## Sanitization Modes
 
-### Change launch variables
+We know one size doesn’t fit all, so Data Shield offers three modes to suit your style:
 
-Describe how the launch.json should be edited.
+### Prefix Matching
+> **Best for:** Simple, predictable naming conventions.
 
-### Github Codespaces
+Remove parameters that start with a specific prefix.
+> Example: Want to remove everything starting with `secret_`? Just set that prefix and Data Shield does the rest.
 
-Create a new repo from this template, and use the create new code.
+**Setup**:
+- Add your prefix (like `internal_`, `private_`, or `secret_`)
+- Toggle strict mode for case sensitivity (on or off — your call)
 
-### Using this Speckle Function
+---
 
-1. [Create](https://automate.speckle.dev/) a new Speckle Automation.
-1. Select your Speckle Project and Speckle Model.
-1. Select the deployed Speckle Function.
-1. Enter a phrase to use in the comment.
-1. Click `Create Automation`.
+### Pattern Matching
+> **Best for:** Wildcards, regex fans, and complex patterns.
 
-## Getting Started with Creating Your Own Speckle Function
+Get fancy and use `*`, `?`, or full regular expressions.
 
-1. [Register](https://automate.speckle.dev/) your Function with [Speckle Automate](https://automate.speckle.dev/) and select the Python template.
-1. A new repository will be created in your GitHub account.
-1. Make changes to your Function in `main.py`. See below for the Developer Requirements and instructions on how to test.
-1. To create a new version of your Function, create a new [GitHub release](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository) in your repository.
+**Examples**:
+- `client_*` matches anything that starts with `client_`
+- `?_internal` matches `a_internal`, `b_internal`
+- `/^(secret|private)_.*$/i` matches parameters starting with `secret_` or `private_`, ignoring case
 
-## Developer Requirements
+---
 
-1. Install the following:
-    - [Python 3](https://www.python.org/downloads/)
-    - [Poetry](https://python-poetry.org/docs/#installing-with-the-official-installer)
-1. Run `poetry shell && poetry install` to install the required Python packages.
+### Anonymization
+> **Best for:** Keeping the structure, hiding the details.
 
-## Building and Testing
+Automatically detect email addresses inside parameter values and anonymize them.
+> Example: `john.doe@example.com` becomes `j***@example.com`
 
-The code can be tested locally by running `poetry run pytest`.
+No setup needed. Just select and go.
 
-### Building and running the Docker Container Image
+---
 
-Running and testing your code on your machine is a great way to develop your Function; the following instructions are a bit more in-depth and only required if you are having issues with your Function in GitHub Actions or on Speckle Automate.
+## How to Use Data Shield
 
-#### Building the Docker Container Image
+1. **Set up your automation:**
+    - In your Speckle project, head to **Automations**
+    - Click **Add Automation** and choose **Data Shield**
+    - Set your trigger (like “on new commit”)
 
-The GitHub Action packages your code into the format required by Speckle Automate. This is done by building a Docker Image, which Speckle Automate runs. You can attempt to build the Docker Image locally to test the building process.
+2. **Configure your mode:**
+    - Choose Prefix, Pattern, or Anonymization
+    - Add your prefix or pattern if needed
+    - Toggle strict mode if you want case sensitivity
 
-To build the Docker Container Image, you must have [Docker](https://docs.docker.com/get-docker/) installed.
+3. **Run it:**
+    - It’ll run automatically when triggered — or you can manually run on specific commits
 
-Once you have Docker running on your local machine:
+4. **Check results:**
+    - Sanitized models show up under the `processed/` branch
+    - You’ll get a run report showing what got cleaned
+    - Highlighted changes can be seen directly in the viewer
 
-1. Open a terminal
-1. Navigate to the directory in which you cloned this repository
-1. Run the following command:
+::: 💡 Tips & Tricks
 
-    ```bash
-    docker build -f ./Dockerfile -t speckle_automate_python_example .
-    ```
+- **Test first!** — Run it on a small test model before going full production.
+- **Start simple.** Use prefix matching for clear conventions, pattern matching for complexity, or anonymization for safe sharing.
+- **Regex pro tip:**
+    - Wrap your regex in `/`
+    - Add `i` for case-insensitive matching
+    - Use `^` (start) and `$` (end) for tighter control
+:::
 
-#### Running the Docker Container Image
 
-Once the GitHub Action has built the image, it is sent to Speckle Automate. When Speckle Automate runs your Function as part of an Automation, it will run the Docker Container Image. You can test that your Docker Container Image runs correctly locally.
+## 📚 Example Workflows
 
-1. To then run the Docker Container Image, run the following command:
+### → Prepping for external sharing
+- Use pattern matching with `/^(internal|private|confidential)_.*$/i`
+- Run before sending out models
+- Share confidently!
 
-    ```bash
-    docker run --rm speckle_automate_python_example \
-    python -u main.py run \
-    '{"projectId": "1234", "modelId": "1234", "branchName": "myBranch", "versionId": "1234", "speckleServerUrl": "https://speckle.xyz", "automationId": "1234", "automationRevisionId": "1234", "automationRunId": "1234", "functionId": "1234", "functionName": "my function", "functionLogo": "base64EncodedPng"}' \
-    '{}' \
-    yourSpeckleServerAuthenticationToken
-    ```
+### → Anonymizing client data
+- Select Anonymization mode
+- Run on any models with contact details
+- Use sanitized versions for demos, public decks, or sales pitches
 
-Let's explain this in more detail:
+### → Stripping out project-specific baggage
+- Prefix matching with something like `projectX_`
+- Clean your models before turning them into templates
 
-`docker run—-rm speckle_automate_python_example` tells Docker to run the Docker Container Image we built earlier. `speckle_automate_python_example` is the name of the Docker Container Image. The `--rm` flag tells Docker to remove the container after it has finished running, freeing up space on your machine.
+---
 
-The line `python -u main.py run` is the command run inside the Docker Container Image. The rest of the command is the arguments passed to the command. The arguments are:
+## 🛠️ Troubleshooting
 
-- `'{"projectId": "1234", "modelId": "1234", "branchName": "myBranch", "versionId": "1234", "speckleServerUrl": "https://speckle.xyz", "automationId": "1234", "automationRevisionId": "1234", "automationRunId": "1234", "functionId": "1234", "functionName": "my function", "functionLogo": "base64EncodedPng"}'` - the metadata that describes the automation and the function.
-- `{}` - the input parameters for the function the Automation creator can set. Here, they are blank, but you can add your parameters to test your function.
-- `yourSpeckleServerAuthenticationToken`—the authentication token for the Speckle Server that the Automation can connect to. This is required to interact with the Speckle Server, for example, to get data from the Model.
+- **Not matching anything?** Double-check your pattern or prefix.
+- **Case mismatch?** Try turning off strict mode.
+- **Only partly sanitized?** Some complex models might need multiple passes.
+- **Errors?** Check run logs in the automation report for clues.
 
-## Resources
+---
 
-- [Learn](https://speckle.guide/dev/python.html) more about SpecklePy and interacting with Speckle from Python.
+## 🤔 Still stuck?
+
+No worries — we’ve got your back.  
+👉 Post your questions in the [Speckle Community Forum](https://speckle.community) and someone from the team (or one of our awesome community members) will help you out!  
