@@ -2,8 +2,6 @@
 
 **Data Shield** is a Speckle Automate function that helps you keep your model data clean, safe, and share-ready. Whether you're sending models to clients, collaborators, or just tidying up before archiving — Data Shield’s got your back.
 
----
-
 ## ✨ What Data Shield Does
 
 Data Shield scans your Speckle model for parameters you’d rather not share and takes care of them for you. It creates a fresh, sanitized version of your model while keeping the original intact.
@@ -15,7 +13,7 @@ Data Shield scans your Speckle model for parameters you’d rather not share and
 
 ---
 
-## Sanitization Modes
+## Shield Modes
 
 We know one size doesn’t fit all, so Data Shield offers three modes to suit your style:
 
@@ -58,7 +56,7 @@ No setup needed. Just select and go.
 1. **Set up your automation:**
     - In your Speckle project, head to **Automations**
     - Click **Add Automation** and choose **Data Shield**
-    - Set your trigger (like “on new commit”)
+    - Set your trigger model
 
 2. **Configure your mode:**
     - Choose Prefix, Pattern, or Anonymization
@@ -66,24 +64,22 @@ No setup needed. Just select and go.
     - Toggle strict mode if you want case sensitivity
 
 3. **Run it:**
-    - It’ll run automatically when triggered — or you can manually run on specific commits
+    - It’ll run automatically when a new version is published — or you can manually run it
 
 4. **Check results:**
-    - Sanitized models show up under the `processed/` branch
+    - Shielded models show up under the `processed/` branch
     - You’ll get a run report showing what got cleaned
     - Highlighted changes can be seen directly in the viewer
 
-::: 💡 Tips & Tricks
-
+---
+## 💡 Tips & Tricks
 - **Test first!** — Run it on a small test model before going full production.
 - **Start simple.** Use prefix matching for clear conventions, pattern matching for complexity, or anonymization for safe sharing.
 - **Regex pro tip:**
     - Wrap your regex in `/`
     - Add `i` for case-insensitive matching
     - Use `^` (start) and `$` (end) for tighter control
-:::
-
-
+---
 ## 📚 Example Workflows
 
 ### → Prepping for external sharing
